@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Homepage</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+    }
+
+    :root {
+      color-scheme: light dark;
+      --glass-bg-light: rgba(255, 255, 255, 0.1);
+      --glass-bg-dark: rgba(0, 0, 0, 0.4);
+      --primary-color-light: #ad9397;
+      --gradient-start-light: #e6dbdc;
+      --gradient-end-light: #625b71;
+      --primary-color-dark: #d8d2e6;
+      --gradient-start-dark: #433e4c;
+      --gradient-end-dark: #595366;
+      --text-color-light: rgba(0, 0, 0, 0.6);
+      --text-color-dark: rgba(255, 255, 255, 0.8);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme]) {
+        --glass-bg: var(--glass-bg-light);
+        --primary-color: var(--primary-color-light);
+        --gradient-start: var(--gradient-start-light);
+        --gradient-end: var(--gradient-end-light);
+        --text-color: var(--text-color-light);
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) {
+        --glass-bg: var(--glass-bg-dark);
+        --primary-color: var(--primary-color-dark);
+        --gradient-start: var(--gradient-start-dark);
+        --gradient-end: var(--gradient-end-dark);
+        --text-color: var(--text-color-dark);
+      }
+    }
+
+    :root[data-theme="light"] {
+      --glass-bg: var(--glass-bg-light);
+      --primary-color: var(--primary-color-light);
+      --gradient-start: var(--gradient-start-light);
+      --gradient-end: var(--gradient-end-light);
+      --text-color: var(--text-color-light);
+    }
+
+    :root[data-theme="dark"] {
+      --glass-bg: var(--glass-bg-dark);
+      --primary-color: var(--primary-color-dark);
+      --gradient-start: var(--gradient-start-dark);
+      --gradient-end: var(--gradient-end-dark);
+      --text-color: var(--text-color-dark);
+    }
+
+    /* 设置基准字体大小 & 防止溢出 */
+    html {
+      font-size: 10px;
+      height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--gradient-start), var(--primary-color), var(--gradient-end));
+      transition: background-image 1s ease-in-out;
+    }
+
+    /* 定义 Liquid Glass */
+    .liquid-glass {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.5rem;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px) saturate(160%);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      z-index: 0;
+    }
+
+    .liquid-glass::before,
+    .liquid-glass::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .liquid-glass::before {
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent 60%);
+    }
+
+    .liquid-glass::after {
+      z-index: 2;
+      box-shadow:
+        inset 2px 2px 6px rgba(255, 255, 255, 0.3),
+        inset -2px -2px 6px rgba(255, 255, 255, 0.15);
+    }
+
+    /* 鼠标光晕效果 */
+    .mouse-glow::before {
+      content: "";
+      position: absolute;
+      top: var(--mouse-y, 50%);
+      left: var(--mouse-x, 50%);
+      width: 25rem;
+      height: 25rem;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2), transparent 60%);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      transition: top 0.05s ease-out, left 0.05s ease-out;
+      z-index: 1;
+      border-radius: 50%;
+    }
+
+    .theme-toggle {
+      width: 4rem;
+      height: 4rem;
+      position: fixed;
+      top: 1rem;
+      right: 1.5rem;
+      background: rgba(0, 0, 0, 0.0);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: none;
+      background-color: transparent;
+      color: var(--text-color);
+      transition: all 0.3s ease;
+      border: none;
+      border-radius: 50%;
+      font-size: 2rem;
+      cursor: pointer;
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px) saturate(160%);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-color);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      transform: rotate(15deg);
+    }
+
+    .theme-toggle:hover::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 60%);
+      pointer-events: none;
+    }
+
+    .avatar {
+      width: 12rem;
+      height: 12rem;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 0.3rem solid var(--primary-color);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.4s ease;
+      ;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .avatar:hover {
+      transform: rotateY(10deg) rotateX(5deg) scale(1.03);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .box {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 3;
+      display: flex;
+      width: 85rem;
+      height: 55rem;
+      border-radius: 1.5rem;
+      margin: 0 auto;
+      transform: translateY(-5%);
+    }
+
+    .box .form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .box .form h2 {
+      color: var(--text-color);
+      margin: 1rem 0 0 0;
+      font-size: 3rem;
+    }
+
+    .box .form h3 {
+      color: var(--text-color);
+      margin: 1rem 0 0 0;
+      font-size: 2rem;
+    }
+
+    .line {
+      width: 100%;
+      border-bottom: 1px solid var(--text-color);
+      margin: 2rem 0 0 0;
+    }
+
+    .box .form .fn {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .box .form .fn a {
+      position: relative;
+      z-index: 0;
+      backdrop-filter: blur(0px);
+      background-color: transparent;
+      border: none;
+      transition: all 0.3s ease;
+      font-size: 1.7rem;
+      text-decoration: none;
+      border-radius: 1.5rem;
+      margin-top: 1rem;
+      padding: 1rem;
+      color: var(--text-color);
+
+    }
+
+    .box .form .fn a:hover {
+      color: var(--text-color);
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1)
+    }
+
+    .box .form .fn a:hover::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 60%);
+      pointer-events: none;
+    }
+
+    .footer {
+      font-size: 1.5rem;
+      color: var(--text-color);
+    }
+
+    .footer a {
+      text-decoration: none;
+      color: var(--text-color);
+      position: relative;
+      z-index: 0;
+      padding: 1rem;
+      backdrop-filter: blur(0px);
+      background-color: transparent;
+      border: none;
+      border-radius: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .footer a:hover {
+      color: var(--text-color);
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1)
+    }
+
+    .footer a:hover::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 60%);
+      pointer-events: none;
+    }
+
+    /* 响应式布局 */
+    @media (max-width: 850px) {
+      .box {
+        width: 100%;
+        height: 55rem;
+        border-radius: 1.5rem;
+        margin: 0 auto;
+        transform: translateY(-5%);
+      }
+    }
+
+    @media (max-width: 405px) {
+      .box .form h3 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 切换按钮 -->
+  <button id="theme-toggle" class="theme-toggle">
+    <i class="fas fa-moon"></i>
+  </button>
+
+  <!-- 主要元素 -->
+  <div class="box liquid-glass mouse-glow">
+    <div class="form">
+      <div class="avatar">
+        <img src="img/avatar.jpg" alt="avatar">
+      </div>
+      <h2>你好，我是xxx</h2>
+      <h3>这是文字。</h3>
+      <div class="line"></div>
+      <div class="fn">
+        <a href="" target="_blank">GitHub</a>
+        <a href="" target="_blank">Blog</a>
+        <a href="" target="_blank">邮箱</a>
+        <a href="" target="_blank">关于</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <div class="footer">
+    Powered by <a href="https://github.com/r1i1na/IrisPane/" target="_blank">IrisPane</a> by <a href="https://github.com/r1i1na" target="_blank">Rin</a>
+  </div>
+
+  <!-- SVG 滤镜 -->
+  <svg style="display: none">
+    <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.01 0.01" numOctaves="2" seed="8" result="turbulence" />
+      <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
+      <feDisplacementMap in="SourceGraphic" in2="softMap" scale="60" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+
+  <!-- JavaScript -->
+  <script>
+    // 初始化常量
+    const root = document.documentElement;
+    const btn = document.getElementById('theme-toggle');
+    const icon = btn.querySelector('i');
+    const glowBox = document.querySelector('.mouse-glow');
+    // 检测深色 / 浅色模式
+    function detect() {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    // 应用主题
+    function apply(theme) {
+      if (theme) root.setAttribute('data-theme', theme);
+      else root.removeAttribute('data-theme');
+
+      if (icon) icon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+    }
+    // 检查本地存储
+    const stored = localStorage.getItem('theme');
+    if (stored) apply(stored);
+    else apply(null);
+    // 监听按钮点击事件
+    btn.addEventListener('click', () => {
+      const cur = root.getAttribute('data-theme') || detect();
+      const next = cur === 'dark' ? 'light' : 'dark';
+      apply(next);
+      localStorage.setItem('theme', next);
+    });
+
+    // 监听系统颜色主题变化
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (!localStorage.getItem('theme')) apply(null);
+    });
+    // 监听鼠标移动
+    glowBox.addEventListener('mousemove', (e) => {
+      const rect = glowBox.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      glowBox.style.setProperty('--mouse-x', `${x}px`);
+      glowBox.style.setProperty('--mouse-y', `${y}px`);
+    });
+  </script>
+
+</body>
+</html>
